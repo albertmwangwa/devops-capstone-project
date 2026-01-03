@@ -1,22 +1,24 @@
-name: CI Pipeline
+name: CI
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+  push:
+    branches:
+      - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     services:
       postgres:
         image: postgres:alpine
         env:
-          POSTGRES_DB: testdb
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: accounts
         ports:
           - 5432:5432
         options: >-
@@ -26,10 +28,11 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URI: postgresql://postgres:postgres@localhost:5432/testdb
+      DATABASE_URI: postgresql://postgres:postgres@localhost:5432/accounts
+      FLASK_ENV: testing
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -46,6 +49,6 @@ jobs:
         run: |
           flake8 service tests
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           nosetests
