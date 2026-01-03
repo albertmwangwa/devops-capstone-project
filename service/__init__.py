@@ -14,6 +14,7 @@ def create_app(test_config=None):
     # Default configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///accounts.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = "dev-secret-key-change-me"
 
     # Override with test config if provided
     if test_config:
@@ -25,12 +26,10 @@ def create_app(test_config=None):
     # Import models to register them with SQLAlchemy
     with app.app_context():
         from service.models import Account
-
         db.create_all()
 
-    # Import and register routes
-    from service.routes import init_app
-
-    init_app(app)
+    # Import and register Blueprint
+    from service.routes import accounts_bp
+    app.register_blueprint(accounts_bp)
 
     return app

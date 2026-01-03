@@ -81,3 +81,9 @@ def delete_account(account_id):
     if account:
         account.delete()
     return "", 204
+
+
+# For backward compatibility with service/__init__.py
+def init_app(app):
+    """Initialize routes with the app (for backward compatibility)"""
+    app.register_blueprint(accounts_bp)
