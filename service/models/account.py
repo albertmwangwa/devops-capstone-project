@@ -10,6 +10,7 @@ class Account(db.Model):
     name = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
     phone_number = db.Column(db.String(32))
+    address = db.Column(db.String(200))  # Added this field
     disabled = db.Column(db.Boolean, default=False)
     date_joined = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -23,6 +24,7 @@ class Account(db.Model):
             'name': self.name,
             'email': self.email,
             'phone_number': self.phone_number,
+            'address': self.address,
             'disabled': self.disabled,
             'date_joined': self.date_joined.isoformat() if self.date_joined else None
         }
@@ -33,6 +35,7 @@ class Account(db.Model):
             self.name = data['name']
             self.email = data['email']
             self.phone_number = data.get('phone_number')
+            self.address = data.get('address')  # Handle address field
             self.disabled = data.get('disabled', False)
         except KeyError as error:
             raise ValueError(f"Missing required field: {error}")

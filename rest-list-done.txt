@@ -1,0 +1,9 @@
+﻿{
+    "address":  "123 Main St.",
+    "date_joined":  "2026-01-03T07:02:47.043499",
+    "disabled":  false,
+    "email":  "john@doe.com",
+    "id":  1,
+    "name":  "John Doe",
+    "phone_number":  "555-1212"
+}
