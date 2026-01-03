@@ -3,17 +3,9 @@
 from flask import Flask, jsonify
 from flask_talisman import Talisman
 from flask_cors import CORS
-import os
-import sys
-
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
 
 
-def create_app():
+def create_app(test_config=None):
     """Create Flask application"""
     app = Flask(__name__)
 
@@ -21,6 +13,10 @@ def create_app():
     app.config['SECRET_KEY'] = 'dev-secret-key-change-in-production'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///accounts.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Override with test config if provided
+    if test_config:
+        app.config.update(test_config)
 
     # Initialize Flask-Talisman for security headers
     Talisman(
@@ -47,23 +43,23 @@ def create_app():
          expose_headers=["Content-Type", "Authorization"],
          max_age=600)
 
-    # Initialize database - use relative import
+    # Initialize database
     try:
-        from .models import db
+        from service.models import db
         db.init_app(app)
 
         # Create tables
         with app.app_context():
             db.create_all()
     except ImportError:
-        print("Warning: Could not initialize database models")
+        print("Note: Database models not available")
 
-    # Register blueprints - use relative import
+    # Register routes using init_app pattern
     try:
-        from .routes import accounts_bp
-        app.register_blueprint(accounts_bp)
+        from service import routes
+        routes.init_app(app)
     except ImportError as e:
-        print(f"Warning: Could not register routes: {e}")
+        print(f"Note: Could not register routes: {e}")
 
     # Add health check endpoint
     @app.route('/')
@@ -88,9 +84,8 @@ def create_app():
     return app
 
 
-# Only create app if this file is run directly
+# Create app instance for imports
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)
-else:
-    app = create_app()
