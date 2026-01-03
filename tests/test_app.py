@@ -1,6 +1,6 @@
 """Test for app.py"""
 
-from app import app
+from service.app import app
 import json
 import os
 import sys
