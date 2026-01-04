@@ -1,0 +1,32 @@
+# tekton/tasks/deploy.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-to-kubernetes
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: namespace
+      description: Kubernetes namespace to deploy to
+      type: string
+      default: "default"
+  steps:
+    - name: deploy
+      image: bitnami/kubectl:latest
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        echo "Deploying to Kubernetes..."
+        
+        # Apply PostgreSQL if not exists
+        kubectl apply -f deploy/postgres-deployment.yaml --namespace=$(params.namespace) || true
+        
+        # Apply application deployment
+        kubectl apply -f deploy/deployment.yaml --namespace=$(params.namespace)
+        kubectl apply -f deploy/service.yaml --namespace=$(params.namespace)
+        
+        # Wait for rollout
+        kubectl rollout status deployment/accounts --namespace=$(params.namespace) --timeout=300s
+        
+        echo "Deployment completed successfully!"

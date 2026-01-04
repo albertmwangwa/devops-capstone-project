@@ -1,0 +1,16 @@
+# tekton/workspace-fixed.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cd-pipeline-workspace
+  annotations:
+    # Prevent automatic cleanup
+    tekton.dev/pvc: "cd-pipeline-workspace"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+  volumeMode: Filesystem

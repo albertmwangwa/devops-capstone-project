@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-image
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: image  # NOT image-name
+      description: Image name to build
+      type: string
+    - name: tag    # Add this parameter
+      description: Image tag
+      type: string
+      default: "latest"
+  steps:
+    - name: build
+      image: gcr.io/kaniko-project/executor:latest
+      workingDir: $(workspaces.source.path)
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(workspaces.source.path)/Dockerfile
+        - --destination=$(params.image):$(params.tag)
+        - --context=$(workspaces.source.path)
+        - --skip-tls-verify=true
+        - --no-push

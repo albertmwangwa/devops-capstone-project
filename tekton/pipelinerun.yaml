@@ -1,0 +1,24 @@
+# tekton/pipelinerun.yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: cd-pipeline-run
+spec:
+  serviceAccountName: pipeline
+  pipelineRef:
+    name: cd-pipeline
+  workspaces:
+    - name: pipeline-workspace
+      persistentVolumeClaim:
+        claimName: cd-pipeline-workspace
+  params:
+    - name: repo-url
+      value: "https://github.com/albertmwangwa/devops-capstone-project.git"
+    - name: branch
+      value: "main"
+    - name: image-name
+      value: "accounts"
+    - name: image-tag
+      value: "latest"
+    - name: namespace
+      value: "default"
