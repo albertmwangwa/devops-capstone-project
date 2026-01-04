@@ -1,0 +1,84 @@
+# tekton/pipeline.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cd-pipeline
+spec:
+  workspaces:
+    - name: pipeline-workspace
+  params:
+    - name: repo-url
+      type: string
+      default: "https://github.com/albertmwangwa/devops-capstone-project.git"
+    - name: branch
+      type: string
+      default: "main"
+    - name: image-name
+      type: string
+      default: "accounts"
+    - name: image-tag
+      type: string
+      default: "latest"
+    - name: namespace
+      type: string
+      default: "default"
+  tasks:
+    - name: clone
+      taskRef:
+        name: clone-repository
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.branch)
+
+    - name: lint
+      taskRef:
+        name: lint-code
+      runAfter:
+        - clone
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+
+    - name: test
+      taskRef:
+        name: run-tests
+      runAfter:
+        - clone
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+
+    - name: build
+      taskRef:
+        name: build-image
+      runAfter:
+        - test
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: image
+          value: $(params.image-name)
+        - name: tag
+          value: $(params.image-tag)
+
+    - name: deploy
+      taskRef:
+        name: openshift-client
+      runAfter:
+        - build
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: namespace
+          value: $(params.namespace)
+        - name: image-name
+          value: $(params.image-name)
+        - name: image-tag
+          value: $(params.image-tag)
